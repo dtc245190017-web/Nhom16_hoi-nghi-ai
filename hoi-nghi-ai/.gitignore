@@ -1,0 +1,19 @@
+# Môi trường & bí mật
+.env
+*.db
+hoi_nghi_ai.db
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Tệp tải lên của tác giả
+uploads/

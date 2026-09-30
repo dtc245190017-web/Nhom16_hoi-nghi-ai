@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hệ thống quản lý hội nghị khoa học</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">Hệ thống quản lý hội nghị khoa học có tích hợp AI</div>
+  <div class="user">
+    <span id="whoami">—</span>
+    <button id="btn-logout" class="ghost">Đăng xuất</button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <button class="nav" data-view="dashboard">Dashboard</button>
+    <button class="nav" data-view="conferences">Hội nghị &amp; mốc thời gian</button>
+    <button class="nav" data-view="papers">Bài báo nộp</button>
+    <button class="nav" data-view="reviewers">Phản biện &amp; chuyên môn</button>
+    <button class="nav" data-view="assignments">Phân công phản biện</button>
+    <button class="nav" data-view="reviews">Nhận xét của tôi</button>
+    <button class="nav" data-view="sessions">Phiên trình bày</button>
+    <button class="nav" data-view="registrations">Đăng ký tham dự</button>
+    <button class="nav" data-view="ai">Nhật ký AI</button>
+    <button class="nav" data-view="admin">Quản trị</button>
+  </aside>
+
+  <main class="content">
+    <div id="toast" class="toast hidden"></div>
+
+    <section id="view-dashboard" class="view">
+      <h2>Dashboard thống kê</h2>
+      <p class="hint">Số liệu được tổng hợp trực tiếp từ cơ sở dữ liệu, không phụ thuộc AI.</p>
+      <div id="stats-cards" class="cards"></div>
+      <h3>Bài nộp theo trạng thái</h3>
+      <table id="stats-status"></table>
+      <h3>Bài nộp theo lĩnh vực chuyên môn</h3>
+      <table id="stats-field"></table>
+      <h3>Phân công quá hạn</h3>
+      <table id="stats-overdue"></table>
+    </section>
+
+    <section id="view-conferences" class="view hidden">
+      <h2>Hội nghị &amp; mốc thời gian</h2>
+      <p class="hint">Hạn nộp bài ≤ hạn phản biện ≤ ngày thông báo kết quả.</p>
+      <table id="conference-list"></table>
+      <h3>Thêm hội nghị</h3>
+      <form id="form-conference" class="grid">
+        <input name="name" placeholder="Tên hội nghị" required>
+        <input name="year" type="number" placeholder="Năm" value="2026" required>
+        <input name="location" placeholder="Địa điểm">
+        <label>Hạn nộp bài <input name="submission_deadline" type="date" required></label>
+        <label>Hạn phản biện <input name="review_deadline" type="date" required></label>
+        <label>Ngày thông báo <input name="notification_date" type="date" required></label>
+        <label>Hạn camera-ready <input name="camera_ready_deadline" type="date"></label>
+        <button type="submit">Lưu hội nghị</button>
+      </form>
+    </section>
+
+    <section id="view-papers" class="view hidden">
+      <h2>Bài báo nộp</h2>
+      <div class="filters">
+        <input id="paper-q" placeholder="Tìm theo tiêu đề hoặc abstract">
+        <select id="paper-status">
+          <option value="">Tất cả trạng thái</option>
+          <option value="submitted">Đã nộp</option>
+          <option value="under_review">Đang phản biện</option>
+          <option value="accepted">Được chấp nhận</option>
+          <option value="rejected">Bị từ chối</option>
+          <option value="camera_ready">Camera-ready</option>
+        </select>
+        <button id="btn-search-paper">Tìm kiếm</button>
+      </div>
+      <table id="paper-list"></table>
+
+      <h3>Nộp bài báo mới</h3>
+      <form id="form-paper" class="grid">
+        <select name="conference_id" id="paper-conference" required></select>
+        <input name="title" placeholder="Tiêu đề bài báo" required>
+        <textarea name="abstract" placeholder="Abstract (tối thiểu 100 ký tự)" required></textarea>
+        <input name="keywords" placeholder="Từ khóa, cách nhau bởi dấu phẩy">
+        <select name="topics" id="paper-topics" multiple size="4"></select>
+        <textarea name="authors" placeholder="Đồng tác giả: Họ tên|email|Tổ chức (mỗi dòng một người)"></textarea>
+        <button type="submit">Nộp bài</button>
+      </form>
+    </section>
+
+    <section id="view-reviewers" class="view hidden">
+      <h2>Phản biện &amp; lĩnh vực chuyên môn</h2>
+      <table id="reviewer-list"></table>
+      <h3>Cập nhật hồ sơ phản biện</h3>
+      <form id="form-reviewer" class="grid">
+        <select name="profile_id" id="reviewer-select" required></select>
+        <input name="degree" placeholder="Học vị">
+        <input name="organization" placeholder="Tổ chức công tác">
+        <input name="max_load" type="number" value="5" placeholder="Số bài tối đa">
+        <select name="expertise_ids" id="reviewer-fields" multiple size="5"></select>
+        <button type="submit">Lưu hồ sơ</button>
+      </form>
+    </section>
+
+    <section id="view-assignments" class="view hidden">
+      <h2>Phân công phản biện</h2>
+      <p class="hint">Tối đa 3 phản biện cho một bài báo; không phân công trùng; tôn trọng tải công việc.</p>
+      <table id="assignment-list"></table>
+      <h3>Phân công mới</h3>
+      <form id="form-assignment" class="grid">
+        <select name="paper_id" id="assign-paper" required></select>
+        <select name="reviewer_profile_id" id="assign-reviewer" required></select>
+        <label>Hạn hoàn thành <input name="due_date" type="date" required></label>
+        <button type="submit">Phân công</button>
+      </form>
+    </section>
+
+    <section id="view-reviews" class="view hidden">
+      <h2>Nhận xét phản biện của tôi</h2>
+      <table id="my-assignment-list"></table>
+      <h3>Gửi nhận xét</h3>
+      <form id="form-review" class="grid">
+        <select name="assignment_id" id="review-assignment" required></select>
+        <input name="score" type="number" step="0.5" min="1" max="10" placeholder="Điểm 1–10" required>
+        <select name="recommendation">
+          <option value="accept">Chấp nhận</option>
+          <option value="minor">Chỉnh sửa nhỏ</option>
+          <option value="major">Chỉnh sửa lớn</option>
+          <option value="reject">Từ chối</option>
+        </select>
+        <textarea name="comment" placeholder="Nhận xét cho tác giả" required></textarea>
+        <textarea name="internal_note" placeholder="Nhận xét nội bộ (không gửi tác giả)"></textarea>
+        <button type="submit">Gửi nhận xét</button>
+      </form>
+    </section>
+
+    <section id="view-sessions" class="view hidden">
+      <h2>Phiên trình bày</h2>
+      <table id="session-list"></table>
+      <h3>Thêm phiên</h3>
+      <form id="form-session" class="grid">
+        <select name="conference_id" id="session-conference" required></select>
+        <input name="title" placeholder="Tên phiên" required>
+        <label>Ngày <input name="session_date" type="date"></label>
+        <input name="room" placeholder="Phòng">
+        <input name="chair" placeholder="Chủ tọa">
+        <select name="paper_ids" id="session-papers" multiple size="5"></select>
+        <button type="submit">Tạo phiên</button>
+      </form>
+    </section>
+
+    <section id="view-registrations" class="view hidden">
+      <h2>Đăng ký tham dự</h2>
+      <table id="registration-list"></table>
+      <h3>Đăng ký mới</h3>
+      <form id="form-registration" class="grid">
+        <select name="conference_id" id="reg-conference" required></select>
+        <select name="registration_type">
+          <option value="listener">Người tham dự</option>
+          <option value="author">Tác giả</option>
+        </select>
+        <input name="note" placeholder="Ghi chú">
+        <button type="submit">Đăng ký</button>
+      </form>
+    </section>
+
+    <section id="view-ai" class="view hidden">
+      <h2>Nhật ký AI</h2>
+      <p class="hint">Lưu loại tác vụ, nhà cung cấp, thời gian xử lý và lỗi phát sinh (không lưu nội dung chi tiết).</p>
+      <table id="ai-log-list"></table>
+      <h3>Kết quả AI đã sinh</h3>
+      <table id="ai-generation-list"></table>
+      <h3>Nháp email thông báo</h3>
+      <table id="email-draft-list"></table>
+    </section>
+
+    <section id="view-admin" class="view hidden">
+      <h2>Quản trị hệ thống</h2>
+      <table id="user-list"></table>
+      <h3>Nhật ký hệ thống</h3>
+      <table id="system-log-list"></table>
+    </section>
+
+    <div id="ai-panel" class="ai-panel hidden">
+      <div class="ai-head">
+        <strong>Khu vực chức năng AI</strong>
+        <button id="ai-close" class="ghost">Đóng</button>
+      </div>
+      <p class="warn">Kết quả AI là gợi ý tham khảo. AI không đưa ra quyết định học thuật cuối cùng.</p>
+      <div class="ai-actions">
+        <button data-ai="summarize">AI tóm tắt bài báo</button>
+        <button data-ai="suggest">AI gợi ý phản biện</button>
+        <select id="ai-email-kind">
+          <option value="accepted">Thông báo chấp nhận</option>
+          <option value="rejected">Thông báo từ chối</option>
+          <option value="revision">Yêu cầu chỉnh sửa</option>
+          <option value="remind">Nhắc phản biện</option>
+        </select>
+        <button data-ai="email">AI sinh nháp email</button>
+      </div>
+      <div id="ai-source" class="hint"></div>
+      <div id="ai-result" class="ai-result"></div>
+    </div>
+  </main>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+Nhiệm vụ: gợi ý phản biện phù hợp cho một bài báo đã nộp.
+
+Dữ liệu đầu vào:
+- Tiêu đề bài báo: {{paper_title}}
+- Từ khóa bài báo: {{paper_keywords}}
+- Lĩnh vực chuyên môn của bài báo: {{paper_topics}}
+- Abstract: {{paper_abstract}}
+
+Danh sách phản biện ứng viên do hệ thống cung cấp (mỗi người có reviewer_index, lĩnh vực chuyên môn,
+điểm khớp chuyên môn do hệ thống tính trước và tải công việc hiện tại):
+{{reviewer_candidates}}
+
+Yêu cầu đầu ra là một đối tượng JSON gồm đúng ba khoá sau:
+- "recommendations": mảng tối đa 3 phần tử. Mỗi phần tử gồm:
+    + "reviewer_index": số nguyên, BẮT BUỘC phải nằm trong danh sách ứng viên ở trên.
+    + "reason": chuỗi giải thích vì sao phù hợp, dựa trên lĩnh vực chuyên môn và tải công việc.
+    + "confidence": một trong "high", "medium", "low".
+- "bias_note": chuỗi cảnh báo về khả năng thiên lệch của gợi ý (ví dụ thiên lệch theo tổ chức
+  công tác, theo nhóm chuyên môn lớn, hoặc theo việc ưu tiên người ít việc).
+- "disclaimer": chuỗi nhắc rằng đây là gợi ý tham khảo và ban tổ chức quyết định phân công cuối cùng.
+
+Quy tắc bắt buộc:
+1. Tuyệt đối không viết ra tên người, học vị hay tổ chức công tác; chỉ dùng reviewer_index.
+2. Không gợi ý người không có trong danh sách ứng viên.
+3. Không đưa ra quyết định phân công cuối cùng và không đánh giá năng lực cá nhân.
+4. Sắp xếp recommendations theo mức phù hợp giảm dần.
+5. Chỉ trả về JSON thuần, không kèm giải thích, không bọc trong markdown.

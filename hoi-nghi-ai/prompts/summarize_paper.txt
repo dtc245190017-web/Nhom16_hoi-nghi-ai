@@ -1,0 +1,20 @@
+Nhiệm vụ: tóm tắt một bài báo khoa học đã nộp cho hội nghị.
+
+Dữ liệu đầu vào (chỉ đọc, không suy diễn thêm):
+- Tiêu đề: {{paper_title}}
+- Từ khóa tác giả khai báo: {{paper_keywords}}
+- Lĩnh vực chuyên môn đã chọn: {{paper_topics}}
+- Abstract: {{paper_abstract}}
+
+Yêu cầu đầu ra là một đối tượng JSON gồm đúng bốn khoá sau:
+- "summary": chuỗi, tóm tắt nội dung abstract trong tối đa 4 câu, văn phong trung tính.
+- "contributions": mảng chuỗi, tối đa 3 phần tử, mỗi phần tử là một đóng góp chính nêu trong abstract.
+- "method": chuỗi một câu mô tả phương pháp hoặc cách tiếp cận được nêu trong abstract.
+- "normalized_keywords": mảng chuỗi, tối đa 8 phần tử, là các từ khóa đã chuẩn hoá (chữ thường,
+  thống nhất cách viết tắt) để dùng cho bước đối chiếu lĩnh vực chuyên môn của phản biện.
+
+Quy tắc bắt buộc:
+1. Không nhận xét chất lượng, không cho điểm, không đề xuất chấp nhận hay từ chối bài báo.
+2. Không thêm thông tin không có trong dữ liệu đầu vào (không suy đoán số liệu, không bịa tên tạp chí).
+3. Nếu abstract không đủ thông tin cho một khoá nào đó, trả về chuỗi rỗng hoặc mảng rỗng.
+4. Chỉ trả về JSON thuần, không kèm giải thích, không bọc trong markdown.

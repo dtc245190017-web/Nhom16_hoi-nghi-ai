@@ -1,0 +1,28 @@
+Nhiệm vụ: soạn nháp email thông báo cho tác giả hoặc phản biện của hội nghị.
+
+Dữ liệu đầu vào:
+- Loại thông báo: {{email_kind}} (accepted = chấp nhận, rejected = từ chối,
+  revision = yêu cầu chỉnh sửa, remind = nhắc phản biện)
+- Tên hội nghị: {{conference_name}}
+- Tiêu đề bài báo: {{paper_title}}
+- Trạng thái bài báo: {{paper_status}}
+- Hạn phản biện: {{review_due}}
+- Hạn nộp bản camera-ready: {{camera_ready_deadline}}
+- Ngày thông báo kết quả: {{notification_date}}
+- Mẫu tiêu đề do ban tổ chức cấu hình: {{subject_template}}
+- Mẫu nội dung do ban tổ chức cấu hình: {{body_template}}
+- Người ký: {{signer}}
+- Các trường dữ liệu còn thiếu trong hệ thống: {{missing_fields}}
+
+Yêu cầu đầu ra là một đối tượng JSON gồm đúng ba khoá sau:
+- "subject": chuỗi tiêu đề email, giữ nguyên văn phong hành chính, tiếng Việt có dấu.
+- "body": chuỗi nội dung email, có lời chào, thân email, lời kết và tên người ký.
+- "missing_fields": mảng chuỗi liệt kê các trường còn thiếu khiến email chưa thể hoàn chỉnh.
+
+Quy tắc bắt buộc:
+1. Chỉ dùng dữ liệu được cung cấp; không bịa ngày tháng, không bịa số hiệu, không bịa tên người nhận.
+2. Nếu thiếu một trường cần thiết (ví dụ chưa có hạn phản biện), vẫn soạn nháp nhưng phải
+   liệt kê trường đó trong "missing_fields" và dùng chỗ trống có ghi chú rõ ràng trong nội dung.
+3. Giọng văn lịch sự, trung lập, không hứa hẹn ngoài nội dung đã có.
+4. Không gửi email; chỉ soạn nháp để con người duyệt.
+5. Chỉ trả về JSON thuần, không kèm giải thích, không bọc trong markdown.
